@@ -14,6 +14,9 @@ def get_current_hash():
     response = requests.get(URL)
     response.raise_for_status()
     return hashlib.sha256(response.content).hexdigest()
+    print(f"Current hash: {current_hash}")
+    print(f"GIST_ID: {GIST_ID}")
+    print(f"GH_TOKEN valid: {len(GH_TOKEN) == 40}")  # PATs are 40 chars
 
 def update_gist(new_hash):
     g = Github(GH_TOKEN)
