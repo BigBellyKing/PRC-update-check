@@ -1,8 +1,8 @@
 # prcboard-checker.py
-import os
 import hashlib
+import os
 import requests
-from github import Github
+from github import Github, InputFileContent
 
 # Configuration
 URL = "https://www.prcboard.com/room-assignments-april-2025-electronics-engineer-licensure-exam-ece-electronics-technician-licensure-exam-ect"
@@ -23,7 +23,7 @@ def update_gist(new_hash):
     gist = g.get_gist(GIST_ID)
     gist.edit(
         description="PRC Board Update Checker",
-        files={list(gist.files.keys())[0]: github.InputFileContent(new_hash)}
+        files={list(gist.files.keys())[0]: InputFileContent(new_hash)}
     )
 
 def get_previous_hash():
