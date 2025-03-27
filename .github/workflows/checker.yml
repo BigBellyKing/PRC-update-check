@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests PyGithub
+        pip install requests PyGithub beautifulsoup4
 
     - name: Run checker
       env:
@@ -29,3 +29,11 @@ jobs:
         GIST_ID: ${{ secrets.GIST_ID }}
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: python prcboard-checker.py
+
+    # Add this new step for job status notifications
+    - name: Notify job status
+      if: always()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        SLACK_MESSAGE: "Job ${{ job.status }} for PRC Checker\n(<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Log>)"
