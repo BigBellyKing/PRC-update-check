@@ -30,10 +30,18 @@ jobs:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: python prcboard-checker.py
 
-    # Add this new step for job status notifications
-    - name: Notify job status
+    - name: Notify Job Status (Discord)
       if: always()
-      uses: rtCamp/action-slack-notify@v2
+      uses: Ilshidur/action-discord@master
       env:
-        SLACK_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        SLACK_MESSAGE: "Job ${{ job.status }} for PRC Checker\n(<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Log>)"
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: |
+          {
+            "username": "PRC Checker Bot",
+            "embeds": [{
+              "title": "Job ${{ job.status }}",
+              "description": "PRC Board Checker workflow completed\n[View Log](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+              "color": "${{ job.status == 'success' && '65280' || '16711680' }}"
+            }]
+          }
