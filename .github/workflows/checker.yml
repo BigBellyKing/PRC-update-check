@@ -33,16 +33,7 @@ jobs:
     - name: Notify Job Status (Discord)
       if: always()
       uses: Ilshidur/action-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        message: |
-          {
-            "username": "PRC Checker Bot",
-            "embeds": [
-              {
-                "title": "Job ${{ job.status }}",
-                "description": "PRC Board Checker workflow completed\n[View Log](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
-                "color": "${{ job.status == 'success' && '65280' || '16711680' }}"
-              }
-            ]
-          }
+        args: '{"username":"PRC Checker Bot","embeds":[{"title":"Job ${{ job.status }}","description":"PRC Board Checker workflow completed\n[View Log](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})","color":"${{ job.status == ''success'' && ''65280'' || ''16711680'' }}"}]}'
