@@ -10,23 +10,20 @@ GIST_ID = os.environ['GIST_ID']
 DISCORD_WEBHOOK = os.environ['DISCORD_WEBHOOK']
 GH_TOKEN = os.environ['GH_TOKEN']
 
-def check_for_update():
+def check_for_metro_manila_link():
     response = requests.get(URL)
     response.raise_for_status()
     
     soup = BeautifulSoup(response.text, 'html.parser')
-    target_element = soup.find('li', string='Metro Manila')
+    metro_manila_item = soup.find('li', string='Metro Manila')
     
-    if not target_element:
-        raise Exception("Metro Manila list item not found in the page")
+    if not metro_manila_item:
+        raise ValueError("Metro Manila list item not found on the page")
     
-    # Check if the element has a hyperlink
-    has_link = bool(target_element.find('a'))
-    link = target_element.find('a')['href'] if has_link else None
-    
-    return has_link, link
+    link = metro_manila_item.find('a')
+    return link['href'] if link else None
 
-def update_gist(new_state):
+def update_gist_state(new_state):
     g = Github(GH_TOKEN)
     gist = g.get_gist(GIST_ID)
     gist.edit(
@@ -37,34 +34,35 @@ def update_gist(new_state):
 def get_previous_state():
     g = Github(GH_TOKEN)
     gist = g.get_gist(GIST_ID)
-    return list(gist.files.values())[0].content.strip()
+    content = list(gist.files.values())[0].content.strip()
+    return content.split('|', 1) if content else ['', '']
 
 def send_discord_notification(link):
     payload = {
-        "content": f"🚨 Room assignments updated! \nDownload link: {link}"
+        "content": f"?? Metro Manila Room Assignments Available!\nDownload link: {link}"
     }
     requests.post(DISCORD_WEBHOOK, json=payload)
 
 def main():
     try:
-        current_has_link, current_link = check_for_update()
-        current_state = f"{current_has_link}|{current_link or ''}"
+        current_link = check_for_metro_manila_link()
+        current_state = f"{bool(current_link)}|{current_link or ''}"
         
-        previous_state = get_previous_state()
-        prev_has_link, prev_link = previous_state.split('|', 1)
+        previous_has_link, previous_link = get_previous_state()
         
-        # Check if link state changed from no-link to has-link
-        if current_has_link and not eval(prev_has_link):
-            print("Update detected with link!")
+        # Only notify if link appears for the first time
+        if current_link and not previous_has_link.lower() == 'true':
+            print("New Metro Manila link detected!")
             send_discord_notification(current_link)
-            update_gist(current_state)
+            update_gist_state(current_state)
         else:
-            print("No relevant changes detected")
+            print("No new links detected")
             
-    except Exception as e:
+    except ValueError as e:
         print(f"Error: {str(e)}")
-        if "Metro Manila list item not found" in str(e):
-            send_discord_notification("⚠️ Website structure changed! Manual check required")
+        send_discord_notification("?? Website structure changed! Could not find Metro Manila item")
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
 
 if __name__ == "__main__":
     main()

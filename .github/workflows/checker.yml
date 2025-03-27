@@ -29,11 +29,3 @@ jobs:
         GIST_ID: ${{ secrets.GIST_ID }}
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: python prcboard-checker.py
-
-    - name: Notify Job Status (Discord)
-      if: always()
-      uses: Ilshidur/action-discord@master
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      with:
-        args: '{"username":"PRC Checker Bot","embeds":[{"title":"Job ${{ job.status }}","description":"PRC Board Checker workflow completed\n[View Log](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})","color":"${{ job.status == ''success'' && ''65280'' || ''16711680'' }}"}]}'
